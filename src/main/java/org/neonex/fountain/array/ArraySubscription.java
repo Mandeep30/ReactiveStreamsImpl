@@ -3,14 +3,18 @@ package org.neonex.fountain.array;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
 class ArraySubscription<T> implements Subscription {
     private Subscriber<? super T> subscriber;
     private T[] array;
-    private int startIndex = 0;
-    private boolean isCompleted = false;
-    private boolean workInProgress = false;
-    private long requestedElements = 0;
-    private boolean isCancelled = false;
+    private AtomicInteger currentElementIndex = new AtomicInteger(0);
+    private volatile boolean isCompleted = false;
+    private AtomicBoolean workInProgress = new AtomicBoolean(false);
+    private AtomicLong requestedElements = new AtomicLong(0);
+    private volatile boolean isCancelled = false;
 
     ArraySubscription(T[] array, Subscriber<? super T> subscriber) {
         this.array = array;
@@ -18,42 +22,47 @@ class ArraySubscription<T> implements Subscription {
     }
 
     @Override
-    public synchronized void request(long numberOfElements) {
+    public void request(long numberOfElements) {
         if (numberOfElements < 1) {
             subscriber.onError(new IllegalArgumentException());
             cancel();
         }
         if (!isCompleted && !isCancelled) {
-            requestedElements += numberOfElements;
+            requestedElements.addAndGet(numberOfElements);
 
             //e.g. Array size is 5 and 10 is request but already 2 elements are being served so requested should be 3
-            if (requestedElements > array.length) {
-                requestedElements = array.length - startIndex;
+            if (requestedElements.get() > array.length) {
+                requestedElements.updateAndGet(n -> array.length - currentElementIndex.get());
             }
 
+            var initialRequestedElements = requestedElements.intValue();
+            var index = currentElementIndex.getAndAdd(initialRequestedElements);
             //to prevent StackOverFlow
-            if (workInProgress) {
+            if (workInProgress.getAndSet(true)) {
                 return;
             }
 
-            for (var i = startIndex; i < startIndex + requestedElements; i++) {
-                //to handle recursive call of request from onNext()
-                workInProgress = true;
-                //should not throw NPE instead send it as NPE using onError()
-                if (array[i] == null) {
-                    subscriber.onError(new NullPointerException());
+            while (true) {
+                for (; index < currentElementIndex.get() && index < array.length; index++) {
+                    //should not throw NPE instead send it as NPE using onError()
+                    if (array[index] == null) {
+                        subscriber.onError(new NullPointerException());
+                        return;
+                    }
+                    subscriber.onNext(array[index]);
+                }
+                if (currentElementIndex.get() >= array.length) {
+                    subscriber.onComplete();
+                    isCompleted = true;
                     return;
                 }
-                subscriber.onNext(array[i]);
-            }
+                if (initialRequestedElements == requestedElements.get()) {
+                    if (workInProgress.compareAndSet(true, false)) {
+                        requestedElements.set(0);
+                        return;
+                    }
+                }
 
-            startIndex = startIndex + (int) requestedElements;
-            requestedElements = 0;
-            workInProgress = false;
-            if (startIndex == array.length) {
-                subscriber.onComplete();
-                isCompleted = true;
-                return;
             }
         }
     }
