@@ -7,6 +7,7 @@ Also, the `request()` method of the `Subscription` can handle concurrency in a n
 Systems that are Responsive, Resilient, Elastic and Message Driven.
 
 https://www.reactivemanifesto.org/
+
 https://www.reactivemanifesto.org/glossary
 
 ## Reactive Specification
