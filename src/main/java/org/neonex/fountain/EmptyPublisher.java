@@ -2,6 +2,10 @@ package org.neonex.fountain;
 
 import org.reactivestreams.Subscriber;
 
+/**
+ * @param <T>
+ * @author Mandeep Rajpal
+ */
 final class EmptyPublisher<T> extends Fountain<T> {
     private final static Fountain INSTANCE = new EmptyPublisher();
 

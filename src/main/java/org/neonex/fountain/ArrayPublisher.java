@@ -4,6 +4,10 @@ import org.reactivestreams.Subscriber;
 
 import java.util.Arrays;
 
+/**
+ * @param <T>
+ * @author Mandeep Rajpal
+ */
 final class ArrayPublisher<T> extends Fountain<T> {
     private final T[] array;
 

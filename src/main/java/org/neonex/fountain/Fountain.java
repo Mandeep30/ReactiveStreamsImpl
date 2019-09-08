@@ -4,6 +4,12 @@ import com.google.common.collect.Iterators;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscription;
 
+/**
+ * Class containing factory methods to instantiate a {@link Publisher}
+ *
+ * @param <T> type of Publisher
+ * @author Mandeep Rajpal
+ */
 public abstract class Fountain<T> implements Publisher<T> {
 
     /**

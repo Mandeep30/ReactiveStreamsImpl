@@ -7,6 +7,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * @param <T>
+ * @author Mandeep Rajpal
+ */
 final class ArraySubscription<T> implements Subscription {
     private final Subscriber<? super T> subscriber;
     private final T[] array;

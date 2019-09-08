@@ -2,6 +2,9 @@ package org.neonex.fountain;
 
 import org.reactivestreams.Subscription;
 
+/**
+ * @author Mandeep Rajpal
+ */
 final class EmptySubscription implements Subscription {
     static final EmptySubscription INSTANCE = new EmptySubscription();
 
