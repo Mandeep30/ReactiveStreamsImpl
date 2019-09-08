@@ -1,6 +1,6 @@
 package org.neonex.reactiveimpl;
 
-import org.neonex.fountain.array.ArrayPublisher;
+import org.neonex.fountain.Fountain;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -9,6 +9,7 @@ import org.reactivestreams.tck.TestEnvironment;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,6 +22,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 
+@SuppressWarnings("ALL")
 public class ArrayPublisherTest extends PublisherVerification<Long> {
 
     public ArrayPublisherTest() {
@@ -34,7 +36,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
         ArrayList<Integer> order = new ArrayList<>();
         long toRequest = 5L;
         Long[] array = generate(toRequest);
-        ArrayPublisher<Long> publisher = new ArrayPublisher<>(array);
+        Fountain<Long> publisher = Fountain.fromIterable(Arrays.asList(array));
 
         publisher.subscribe(new Subscriber<>() {
             @Override
@@ -75,7 +77,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
         ArrayList<Long> collected = new ArrayList<>();
         long toRequest = 5L;
         Long[] array = generate(toRequest);
-        ArrayPublisher<Long> publisher = new ArrayPublisher<>(array);
+        Fountain<Long> publisher = Fountain.fromArray(array);
         Subscription[] subscription = new Subscription[1];
 
         publisher.subscribe(new Subscriber<>() {
@@ -125,7 +127,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
         CountDownLatch latch = new CountDownLatch(1);
         Long[] array = new Long[]{null};
         AtomicReference<Throwable> error = new AtomicReference<>();
-        ArrayPublisher<Long> publisher = new ArrayPublisher<>(array);
+        Fountain<Long> publisher = Fountain.fromArray(array);
 
         publisher.subscribe(new Subscriber<>() {
             @Override
@@ -159,7 +161,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
         ArrayList<Long> collected = new ArrayList<>();
         long toRequest = 3L;
         Long[] array = generate(toRequest);
-        ArrayPublisher<Long> publisher = new ArrayPublisher<>(array);
+        Fountain<Long> publisher = Fountain.fromArray(array);
 
         publisher.subscribe(new Subscriber<>() {
             Subscription s;
@@ -197,9 +199,9 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
     public void multiThreadingTest() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ArrayList<Long> collected = new ArrayList<>();
-        final int n = 100;
+        final int n = 5000;
         Long[] array = generate(n);
-        ArrayPublisher<Long> publisher = new ArrayPublisher<>(array);
+        Fountain<Long> publisher = Fountain.fromArray(array);
 
         publisher.subscribe(new Subscriber<>() {
             @Override
@@ -236,7 +238,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
         ArrayList<Long> collected = new ArrayList<>();
         long toRequest = 1000L;
         Long[] array = generate(toRequest);
-        ArrayPublisher<Long> publisher = new ArrayPublisher<>(array);
+        Fountain<Long> publisher = Fountain.fromArray(array);
 
         publisher.subscribe(new Subscriber<>() {
 
@@ -269,13 +271,13 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
 
     private static Long[] generate(long num) {
         return LongStream.range(0, num >= Integer.MAX_VALUE ? 1000000 : num)
-                .boxed()
-                .toArray(Long[]::new);
+                         .boxed()
+                         .toArray(Long[]::new);
     }
 
     @Override
     public Publisher<Long> createPublisher(long elements) {
-        return new ArrayPublisher<>(generate(elements));
+        return Fountain.fromArray(generate(elements));
     }
 
     @Override

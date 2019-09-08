@@ -1,4 +1,4 @@
-package org.neonex.fountain.array;
+package org.neonex.fountain;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -7,13 +7,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-class ArraySubscription<T> implements Subscription {
-    private Subscriber<? super T> subscriber;
-    private T[] array;
-    private AtomicInteger currentElementIndex = new AtomicInteger(0);
+final class ArraySubscription<T> implements Subscription {
+    private final Subscriber<? super T> subscriber;
+    private final T[] array;
+    private final AtomicInteger currentElementIndex = new AtomicInteger(0);
     private volatile boolean isCompleted = false;
-    private AtomicBoolean workInProgress = new AtomicBoolean(false);
-    private AtomicLong requestedElements = new AtomicLong(0);
+    private final AtomicBoolean workInProgress = new AtomicBoolean(false);
+    private final AtomicLong requestedElements = new AtomicLong(0);
     private volatile boolean isCancelled = false;
 
     ArraySubscription(T[] array, Subscriber<? super T> subscriber) {
@@ -30,14 +30,16 @@ class ArraySubscription<T> implements Subscription {
         if (!isCompleted && !isCancelled) {
             requestedElements.addAndGet(numberOfElements);
 
-            //e.g. Array size is 5 and 10 is request but already 2 elements are being served so requested should be 3
+            //e.g. Array size is 5 and 10 elements are requested but already 2 elements are being served so requested should be 3
+            //Also, caps the numberOfElements in case numberOfElements > Long.MAX_VALUE
             if (requestedElements.get() > array.length) {
                 requestedElements.updateAndGet(n -> array.length - currentElementIndex.get());
             }
 
             var initialRequestedElements = requestedElements.intValue();
             var index = currentElementIndex.getAndAdd(initialRequestedElements);
-            //to prevent StackOverFlow
+            //to prevent StackOverFlow when onNext() calls request() method recursively
+            //Also, prevent other threads to return from here one thread is already publishing elements
             if (workInProgress.getAndSet(true)) {
                 return;
             }
@@ -62,7 +64,6 @@ class ArraySubscription<T> implements Subscription {
                         return;
                     }
                 }
-
             }
         }
     }
