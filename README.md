@@ -10,7 +10,7 @@ https://www.reactivemanifesto.org/
 
 https://www.reactivemanifesto.org/glossary
 
-## Reactive Specification
+## Reactive Streams Specification
 ![alt text](https://github.com/Mandeep30/ReactiveStreamsImpl/blob/master/img/ReactiveStreamsInterface_1.png)
 
 ![alt text](https://github.com/Mandeep30/ReactiveStreamsImpl/blob/master/img/ReactiveStreamsInterface_2.png)
