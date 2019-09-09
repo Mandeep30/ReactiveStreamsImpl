@@ -69,7 +69,7 @@ public abstract class Fountain<T> implements Publisher<T> {
     }
 
     /**
-     * Returns an singleton instance of empty {@link Publisher}
+     * Returns a singleton instance of an empty {@link Publisher}
      * this will send a {@link Subscription}, using onSubscribe(), which has no impl of request() and cancel()
      * and will subsequently call onComplete()
      *
