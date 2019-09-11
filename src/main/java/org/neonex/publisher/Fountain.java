@@ -1,4 +1,4 @@
-package org.neonex.fountain;
+package org.neonex.publisher;
 
 import com.google.common.collect.Iterators;
 import org.reactivestreams.Publisher;

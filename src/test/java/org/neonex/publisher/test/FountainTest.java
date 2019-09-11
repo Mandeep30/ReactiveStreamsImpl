@@ -1,6 +1,6 @@
-package org.neonex.reactiveimpl;
+package org.neonex.publisher.test;
 
-import org.neonex.fountain.Fountain;
+import org.neonex.publisher.Fountain;
 import org.testng.annotations.Test;
 import reactor.test.StepVerifier;
 

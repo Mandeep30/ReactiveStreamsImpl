@@ -1,4 +1,4 @@
-package org.neonex.fountain;
+package org.neonex.publisher;
 
 import org.reactivestreams.Subscription;
 
