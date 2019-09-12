@@ -81,7 +81,7 @@ public abstract class Fountain<T> implements Publisher<T> {
     }
 
     /**
-     * Returns a Publisher with EmptySubscription and immediately signals onError after being subscribed to
+     * Returns a {@link Publisher} with EmptySubscription and immediately signals onError after being subscribed
      *
      * @param error used while calling onError
      * @param <T>   unused in this case

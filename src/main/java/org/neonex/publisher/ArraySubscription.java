@@ -51,7 +51,7 @@ final class ArraySubscription<T> implements Subscription {
             if (workInProgress.getAndSet(true)) {
                 return;
             }
-            //From this point of code it is guaranteed that only one thread is here
+            //From this point of code it is guaranteed that only one thread will be present here. So, no CAS required
             //Will break infinite loop when WIP is false or all the elements of array are published
             while (true) {
                 for (; index < currentElementIndex.get() && index < array.length; index++) {
