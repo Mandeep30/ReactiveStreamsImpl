@@ -29,7 +29,6 @@ final class ArraySubscription<T> implements Subscription {
     public void request(long numberOfElements) {
         if (numberOfElements < 1) {
             subscriber.onError(new IllegalArgumentException());
-            cancel();
         }
         if (!isCompleted && !isCancelled) {
             requestedElements.addAndGet(numberOfElements);
@@ -39,15 +38,21 @@ final class ArraySubscription<T> implements Subscription {
             if (requestedElements.get() > array.length) {
                 requestedElements.updateAndGet(n -> array.length - currentElementIndex.get());
             }
-
+            //Primitive local variables are thread safe
             var initialRequestedElements = requestedElements.intValue();
+            //currentElementIndex maintains index of Array till where the data has been published
+            // index = currentElementIndex;
+            // currentElementIndex = currentElementIndex + initialRequestedElements;
             var index = currentElementIndex.getAndAdd(initialRequestedElements);
-            //to prevent StackOverFlow when onNext() calls request() method recursively
-            //Also, prevent other threads to return from here one thread is already publishing elements
+
+            //'Work in Progress' pattern
+            //To prevent StackOverFlow when onNext() calls request() method recursively
+            //Also, prevent other threads to return from here when one thread is already publishing elements - Work Stealing
             if (workInProgress.getAndSet(true)) {
                 return;
             }
-
+            //From this point of code it is guaranteed that only one thread is here
+            //Will break infinite loop when WIP is false or all the elements of array are published
             while (true) {
                 for (; index < currentElementIndex.get() && index < array.length; index++) {
                     //should not throw NPE instead send it as NPE using onError()
@@ -62,11 +67,12 @@ final class ArraySubscription<T> implements Subscription {
                     isCompleted = true;
                     return;
                 }
+                //No more elements to process so, this thread may return now
                 if (initialRequestedElements == requestedElements.get()) {
-                    if (workInProgress.compareAndSet(true, false)) {
-                        requestedElements.set(0);
-                        return;
-                    }
+                    workInProgress.set(false);
+                    requestedElements.set(0);
+                    return;
+
                 }
             }
         }

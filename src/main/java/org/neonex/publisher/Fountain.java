@@ -80,4 +80,15 @@ public abstract class Fountain<T> implements Publisher<T> {
         return (Fountain<T>) EmptyPublisher.getInstance();
     }
 
+    /**
+     * Returns a Publisher with EmptySubscription and immediately signals onError after being subscribed to
+     *
+     * @param error used while calling onError
+     * @param <T>   unused in this case
+     * @return a new Publisher
+     */
+    public static <T> Fountain<T> error(Throwable error) {
+        return new ErrorPublisher<>(error);
+    }
+
 }

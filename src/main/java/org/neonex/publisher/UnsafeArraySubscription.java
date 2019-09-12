@@ -4,7 +4,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 @Deprecated(forRemoval = true)
-final class ImperativeArraySubscription<T> implements Subscription {
+final class UnsafeArraySubscription<T> implements Subscription {
     private Subscriber<? super T> subscriber;
     private T[] array;
     private int startIndex = 0;
@@ -12,7 +12,7 @@ final class ImperativeArraySubscription<T> implements Subscription {
     private boolean workInProgress = false;
     private int requestedElements = 0;
 
-    public ImperativeArraySubscription(T[] array, Subscriber<? super T> subscriber) {
+    public UnsafeArraySubscription(T[] array, Subscriber<? super T> subscriber) {
         this.array = array;
         this.subscriber = subscriber;
     }

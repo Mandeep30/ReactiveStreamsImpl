@@ -282,6 +282,6 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
 
     @Override
     public Publisher<Long> createFailedPublisher() {
-        return null;
+        return Fountain.error(new RuntimeException());
     }
 }

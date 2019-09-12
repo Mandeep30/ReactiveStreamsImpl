@@ -15,26 +15,43 @@ public class FountainTest {
                     .expectSubscription()
                     .expectNext()
                     .expectComplete()
+                    .log()
                     .verify();
     }
 
     @Test
-    public void expectTwoElementsWhenFountainIsCreatedUsingFromIterable() {
-        var twoElementsFountain = Fountain.fromIterable(Arrays.asList("Hello", "World"));
+    public void whenFountainIsCreatedUsingFromIterable() {
+        var twoElementsFountain = Fountain.fromIterable(Arrays.asList("Hello", "World", "Mandeep"));
         StepVerifier.create(twoElementsFountain)
                     .expectSubscription()
-                    .expectNext("Hello", "World")
+                    .expectNext("Hello", "World", "Mandeep")
                     .expectComplete()
+                    .log()
                     .verify();
     }
 
     @Test
-    public void expectTwoElementsWhenFountainIsCreatedUsingJust() {
-        var twoElementsFountain = Fountain.just("Mandeep", "Singh", "Rajpal");
+    public void whenFountainIsCreatedUsingJust() {
+        var list = Arrays.asList("Mandeep", "Singh", "Rajpal");
+        //this works like Reactor's Mono
+        var twoElementsFountain = Fountain.just(Arrays.asList("Mandeep", "Singh", "Rajpal"));
         StepVerifier.create(twoElementsFountain)
                     .expectSubscription()
-                    .expectNext("Mandeep", "Singh", "Rajpal")
+                    .expectNext(list)
                     .expectComplete()
+                    .log()
                     .verify();
+    }
+
+    @Test
+    public void testErrorFountainWhichShouldTerminateImmediatelyAfterSubscribe() {
+        var errorFlux = Fountain.error(new RuntimeException());
+        StepVerifier.create(errorFlux)
+                    .expectSubscription()
+                    .expectNext()
+                    .expectError(RuntimeException.class)
+                    .log()
+                    .verify();
+
     }
 }
