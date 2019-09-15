@@ -209,7 +209,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
     public void multiThreadingTest() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ArrayList<Long> collected = new ArrayList<>();
-        final int n = 5000000;
+        final int n = 500000;
         Long[] array = generate(n);
         Fountain<Long> publisher = Fountain.fromArray(array);
 
@@ -239,7 +239,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
             }
         });
 
-        latch.await(1, MINUTES);
+        latch.await(2, MINUTES);
 
         assertEquals(collected, asList(array));
     }

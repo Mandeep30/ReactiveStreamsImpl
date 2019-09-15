@@ -39,16 +39,22 @@ final class ArraySubscription<T> implements Subscription {
             if (workInProgress.getAndSet(true)) {
                 return;
             }
-            for (; startIndex.get() < endIndex.get() && startIndex.get() < array.length; startIndex.incrementAndGet()) {
-                if (array[startIndex.get()] == null) {
-                    subscriber.onError(new NullPointerException());
+            while (workInProgress.get()) {
+                var initialRequest = endIndex.get();
+                for (; startIndex.get() < initialRequest && startIndex.get() < array.length; startIndex.incrementAndGet()) {
+                    if (array[startIndex.get()] == null) {
+                        subscriber.onError(new NullPointerException());
+                    }
+                    subscriber.onNext(array[startIndex.get()]);
                 }
-                subscriber.onNext(array[startIndex.get()]);
-            }
-            workInProgress.compareAndSet(true, false);
-            if (startIndex.get() == array.length) {
-                subscriber.onComplete();
-                isCompleted = true;
+                if (initialRequest == endIndex.get()) {
+                    workInProgress.compareAndSet(true, false);
+                }
+                if (startIndex.get() == array.length) {
+                    subscriber.onComplete();
+                    isCompleted = true;
+                    return;
+                }
             }
         }
     }
