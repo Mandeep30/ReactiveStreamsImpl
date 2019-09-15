@@ -16,7 +16,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.LongStream;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.sort;
 import static java.util.concurrent.ForkJoinPool.commonPool;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -41,12 +43,14 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
         publisher.subscribe(new Subscriber<>() {
             @Override
             public void onSubscribe(Subscription s) {
+                System.out.println("onSubscribe");
                 order.add(0);
                 s.request(toRequest);
             }
 
             @Override
             public void onNext(Long aLong) {
+                System.out.println("onNext " + aLong);
                 collected.add(aLong);
                 if (!order.contains(1)) {
                     order.add(1);
@@ -60,6 +64,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
 
             @Override
             public void onComplete() {
+                System.out.println("onComplete");
                 order.add(2);
                 latch.countDown();
             }
@@ -83,21 +88,24 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
         publisher.subscribe(new Subscriber<>() {
             @Override
             public void onSubscribe(Subscription s) {
+                System.out.println("onSubscribe()");
                 subscription[0] = s;
             }
 
             @Override
             public void onNext(Long aLong) {
+                System.out.printf("onNext(%s)\n", aLong);
                 collected.add(aLong);
             }
 
             @Override
             public void onError(Throwable t) {
-
+                System.out.println("onError()");
             }
 
             @Override
             public void onComplete() {
+                System.out.println("onComplete()");
                 latch.countDown();
             }
         });
@@ -174,6 +182,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
 
             @Override
             public void onNext(Long aLong) {
+                System.out.printf("onNext(%s)\n", aLong);
                 collected.add(aLong);
                 //recursive call but it should serve all the elements but it should not get stuck in StackOverflow
                 s.request(1);
@@ -186,6 +195,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
 
             @Override
             public void onComplete() {
+                System.out.println("onComplete()");
                 latch.countDown();
             }
         });
@@ -199,7 +209,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
     public void multiThreadingTest() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ArrayList<Long> collected = new ArrayList<>();
-        final int n = 5000;
+        final int n = 5000000;
         Long[] array = generate(n);
         Fountain<Long> publisher = Fountain.fromArray(array);
 
@@ -213,6 +223,7 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
 
             @Override
             public void onNext(Long aLong) {
+                System.out.printf("onNext(%s)\n", aLong);
                 collected.add(aLong);
             }
 
@@ -223,11 +234,12 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
 
             @Override
             public void onComplete() {
+                System.out.println("onComplete()");
                 latch.countDown();
             }
         });
 
-        latch.await(2, SECONDS);
+        latch.await(1, MINUTES);
 
         assertEquals(collected, asList(array));
     }
@@ -271,8 +283,8 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
 
     private static Long[] generate(long num) {
         return LongStream.range(0, num >= Integer.MAX_VALUE ? 1000000 : num)
-                         .boxed()
-                         .toArray(Long[]::new);
+                .boxed()
+                .toArray(Long[]::new);
     }
 
     @Override
