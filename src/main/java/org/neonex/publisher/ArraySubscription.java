@@ -81,7 +81,7 @@ final class ArraySubscription<T> implements Subscription {
                     if (array[startIndex.get()] == null) {
                         subscriber.onError(new NullPointerException());
                     }
-                    //maintain count of elements which are sent
+                    //maintain count of elements which are already sent
                     //this will also be used to perform compensating operation on 'requestedElements'
                     numberOfElementsEmitted++;
                     //send data to onNext() channel
@@ -97,10 +97,10 @@ final class ArraySubscription<T> implements Subscription {
                     return;
                 }
                 //if first thread sleeps here and other threads add to 'requestedElements'
-                //so, we need to reset 'requestedElements=0' after this if condition fails
-                //now we need a compensating operation,i.e. for getAndAdd() we now doing addAndGet()
+                //so, we need to reset 'requestedElements=0' after this condition is false
+                //now we need a compensating operation,i.e. for 'getAndAdd()' we perform 'addAndGet()'
                 //to signal that work in progress is now false
-                //this 'requestedElements' should not be independent of other instance variables so as to avoid race condition
+                //this 'requestedElements' should not be dependent on other instance variables so as to avoid race condition
                 if (requestedElements.addAndGet(-numberOfElementsEmitted) == 0) {
                     return;
                 }
