@@ -205,11 +205,16 @@ public class ArrayPublisherTest extends PublisherVerification<Long> {
         assertEquals(collected, asList(array));
     }
 
+    /**
+     * one publisher and one subscriber inside that subscriber multiple thread request elements from that publisher
+     *
+     * @throws InterruptedException
+     */
     @Test
     public void multiThreadingTest() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ArrayList<Long> collected = new ArrayList<>();
-        final int n = 500000;
+        final int n = 50000;
         Long[] array = generate(n);
         Fountain<Long> publisher = Fountain.fromArray(array);
 
